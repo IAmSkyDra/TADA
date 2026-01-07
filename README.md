@@ -1,7 +1,8 @@
 # TADA: Typology-Aware Data Augmentation for Low-Resource NMT
 A principled, typology-aware framework for data augmentation in extremely low-resource Neural Machine Translation (NMT), specifically designed for Vietnamese ethnic minority languages.
 
-This repository accompanies the paper: When Data Augmentation Hurts: Typology-Aware and Meaning-Preserving Augmentation for Low-Resource Neural Machine Translation Anonymous ACL Submission.
+**This repository accompanies the paper:** When Data Augmentation Hurts: Typology-Aware and Meaning-Preserving Augmentation for Low-Resource Neural Machine Translation Anonymous ACL Submission.
+
 ---
 
 ## The Heritage Behind the Data: A Tale of Two Cultures
