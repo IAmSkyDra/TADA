@@ -121,7 +121,6 @@ class ReplaceWithSameThemes(AugmentMethod):
         return pd.concat([self.data, aug_df], ignore_index=True)
 
 class ReplaceWithSameSynonyms(ReplaceWithSameThemes):
-    # Logic y hệt Themes, chỉ khác tên gọi và file input (nếu cần)
     def augment(self):
         logger.info("Applying ReplaceWithSameSynonyms...")
         return super().augment()

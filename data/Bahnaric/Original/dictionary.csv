@@ -1,4 +1,4 @@
-﻿Bahnaric,Vietnamese,pos,theme
+﻿bahnaric,vietnamese,pos,theme
 huĕn,ả,d.,people
 hơbŏ,ả,d.,people
 thĕng,ả,d.,people
@@ -35291,8 +35291,8 @@ hla bar chih,vở,d.,animal
 hla chih,vở,d.,animal
 trong đak,rãnh nước,dtr.,animal
 trŏ,hợp,đ.,ill
-true,trú,đ.,animal
-true,trụ,đ.,ill
+TRUE,trú,đ.,animal
+TRUE,trụ,đ.,ill
 truh năr jrang mă tih,xế chiều,t.,ill
 truiên,truyền,đ.,ill
 trung,trung,đ.,ill
