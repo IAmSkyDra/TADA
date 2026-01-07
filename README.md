@@ -2,9 +2,6 @@
 A principled, typology-aware framework for data augmentation in extremely low-resource Neural Machine Translation (NMT), specifically designed for Vietnamese ethnic minority languages.
 
 This repository accompanies the paper: When Data Augmentation Hurts: Typology-Aware and Meaning-Preserving Augmentation for Low-Resource Neural Machine Translation Anonymous ACL Submission.
-
----
-
 ---
 
 ## The Heritage Behind the Data: A Tale of Two Cultures
@@ -141,8 +138,8 @@ Below is the list of available augmentation strategies you can pass to `--augmen
 ---
 ## Quickstart
 This section demonstrates how to run experiments using the tada-train command.
-# 1. Generate Augmented Data Only (`--mode augment`)
-**Example A: Single Method (Deletion)**
+**1. Generate Augmented Data Only (`--mode augment`)**
+*Example A: Single Method (Deletion)*
 ```bash
 tada-train --mode augment \
            --dataset_path "data/Bahnar/Original/train.csv" \
@@ -150,7 +147,7 @@ tada-train --mode augment \
            --num_deletions 1 \
            --save_data_path "data/Bahnar/train_aug_delete.csv"
 ```
-**Example B: Multiple Methods (Deletion + Synonym)**
+*Example B: Multiple Methods (Deletion + Synonym)*
 ```bash
 tada-train --mode augment \
            --dataset_path "data/Bahnar/Original/train.csv" \
@@ -159,7 +156,7 @@ tada-train --mode augment \
            --num_deletions 1 \
            --save_data_path "data/Bahnar/train_aug_multi.csv"
 ```
-# 2. Train only ('--mode train)
+**2. Train only ('--mode train)**
 This method combines the original corpus with deletion-augmented samples, often yielding the best stability for analytic languages.
 ```bash
 tada-train --mode train \
@@ -168,7 +165,7 @@ tada-train --mode train \
            --output_dir "outputs/Bahnar_TrainOnly"
 ```
 
-# Augment + Train Pipeline (--mode all)
+**3. Augment + Train Pipeline (--mode all)**
 ```bash
 tada-train --mode all \
            --dataset_path "data/Bahnar/Original/train.csv" \
@@ -177,7 +174,6 @@ tada-train --mode all \
            --epochs 15 \
            --output_dir "outputs/Bahnar_FullPipeline"
 ```
-
 ---
 
 ## Datasets
@@ -324,6 +320,8 @@ If you use TADA or the datasets in your research, please cite our work:
     year = {2026}
 }
 ```
+---
+
 ## References
 
 [1] Nguyen L. Tran, D. M. Le, and D. Q. Nguyen. "BARTpho: Pre-trained Sequence-to-Sequence Models for Vietnamese". Interspeech, 2022.
