@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tada"
+version = "0.1.0"
+description = "Typology-Aware Data Augmentation for Low-Resource NMT"
+authors = [{name = "Author", email = "author@example.com"}]
+dependencies = [
+    "torch",
+    "transformers",
+    "datasets",
+    "evaluate",
+    "sacrebleu",
+    "scikit-learn",
+    "pandas",
+    "numpy",
+    "accelerate"
+]
+requires-python = ">=3.8"
+
+[project.scripts]
+tada-train = "tada.cli:main"
