@@ -17,7 +17,7 @@ Full Pipeline: Integrates language-proximal initialization, monolingual continua
 ## Core Features
 TADA provides a comprehensive suite of features designed to support rigorous evaluation of augmentation strategies on typologically diverse languages.
 
-**1. Augmentation Operators** 
+**Augmentation Operators** 
 
 Meaning-Preserving: Synonym Replacement, Theme-Based Replacement, Contextual Place/Time Insertion.
 
