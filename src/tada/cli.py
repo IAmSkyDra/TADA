@@ -12,8 +12,8 @@ def parse_args():
     data = parser.add_argument_group("Data Config")
     data.add_argument("--dataset_path", type=str, required=True, help="Path to TRAIN csv")
     data.add_argument("--test_path", type=str, default=None, help="Path to TEST csv (Optional)") # <--- MỚI THÊM
-    data.add_argument("--source_col", type=str, default="src")
-    data.add_argument("--target_col", type=str, default="tgt")
+    data.add_argument("--source_col", type=str, default="bahnaric")
+    data.add_argument("--target_col", type=str, default="vietnamese")
     data.add_argument("--max_source_len", type=int, default=128)
     data.add_argument("--max_target_len", type=int, default=128)
 
