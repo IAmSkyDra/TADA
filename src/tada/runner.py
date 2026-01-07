@@ -20,7 +20,7 @@ def run_training(args):
     np.random.seed(args.seed)
 
     # Output directory
-    run_name = f"{args.augment_method}_ep{args.epochs}_sd{args.seed}"
+    run_name = f"{'_'.join(args.augment_method)}_ep{args.epochs}_sd{args.seed}"
     output_dir = os.path.join(args.output_dir, run_name)
     
     # Load Model & Tokenizer
@@ -30,6 +30,11 @@ def run_training(args):
 
     # Load Data (with Augmentation)
     tokenized_datasets = load_and_process_data(args, tokenizer)
+
+    # NẾU CHỈ AUGMENT: Dừng tại đây
+    if tokenized_datasets is None:
+        logger.info("Augmentation complete. Exiting training runner.")
+        return
 
     # Trainer Config
     training_args = Seq2SeqTrainingArguments(

@@ -16,7 +16,7 @@ def clean_text(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 def load_and_process_data(args, tokenizer):
-    logger.info(f"Loading train data from {args.dataset_path}")
+    logger.info(f"Loading data from {args.dataset_path}")
     
     # 1. Load Train
     try:
@@ -27,7 +27,7 @@ def load_and_process_data(args, tokenizer):
             ds = load_dataset(args.dataset_path)
             df_train = ds['train'].to_pandas()
     except Exception as e:
-        logger.error(f"Failed to load train dataset: {e}")
+        logger.error(f"Failed to load dataset: {e}")
         raise e
 
     # Column Mapping
@@ -36,66 +36,87 @@ def load_and_process_data(args, tokenizer):
         args.source_col = df_train.columns[0]
         args.target_col = df_train.columns[1]
 
-    # 2. Augmentation (Only Train)
-    method = args.augment_method
-    logger.info(f"Applying Augmentation: {method}")
-
-    if method == "baseline":
-        aug_df = df_train
-    elif method == "combine":
-        aug = Combine(args.source_col, args.target_col, df_train, batch_size=args.batch_size_aug)
-        aug_df = aug.augment()
-    elif method == "swap":
-        aug = SwapSentences(args.source_col, args.target_col, df_train)
-        aug_df = aug.augment()
-    elif method == "sliding":
-        aug = SlidingWindows(args.source_col, args.target_col, df_train, window_size=args.window_size)
-        aug_df = aug.augment()
-    elif method == "deletion":
-        aug = Deletion(args.source_col, args.target_col, df_train, num_deletions=args.num_deletions)
-        aug_df = aug.augment()
-    elif method == "delete_orig":
-        aug = DeletionWithOriginal(args.source_col, args.target_col, df_train, num_deletions=args.num_deletions)
-        aug_df = aug.augment()
-    elif method in ["theme", "synonym", "insertion"]:
-        if not args.dictionary_path:
-            raise ValueError(f"Method '{method}' requires --dictionary_path")
-        if method == "theme":
-            aug = ReplaceWithSameThemes(args.source_col, args.target_col, df_train, args.dictionary_path)
-        elif method == "synonym":
-            aug = ReplaceWithSameSynonyms(args.source_col, args.target_col, df_train, args.dictionary_path)
-        elif method == "insertion":
-            aug = RandomInsertion(args.source_col, args.target_col, df_train, args.dictionary_path)
-        aug_df = aug.augment()
+    # 2. Augmentation Logic
+    # Nếu mode là 'train', ta bỏ qua augmentation (giả sử input đã là data xịn)
+    if args.mode == "train":
+        logger.info("Mode 'train': Skipping augmentation step.")
+        final_df = df_train
     else:
-        aug_df = df_train
+        # Mode 'augment' hoặc 'all': Chạy augmentation
+        methods = args.augment_method if isinstance(args.augment_method, list) else [args.augment_method]
+        logger.info(f"Applying Methods: {methods}")
 
-    logger.info(f"Train Size: {len(df_train)} -> {len(aug_df)}")
+        # Danh sách chứa các DataFrame kết quả (Bắt đầu với Original)
+        dfs_to_merge = [df_train]
 
-    # 3. Load Test (Logic MỚI)
+        for method in methods:
+            if method == "baseline": continue
+            
+            logger.info(f"Running generator: {method}...")
+            aug = None
+            
+            if method == "combine":
+                aug = Combine(args.source_col, args.target_col, df_train, batch_size=args.batch_size_aug)
+            elif method == "swap":
+                aug = SwapSentences(args.source_col, args.target_col, df_train)
+            elif method == "sliding":
+                aug = SlidingWindows(args.source_col, args.target_col, df_train, window_size=args.window_size)
+            elif method == "deletion":
+                aug = Deletion(args.source_col, args.target_col, df_train, num_deletions=args.num_deletions)
+            elif method == "delete_orig":
+                aug = DeletionWithOriginal(args.source_col, args.target_col, df_train, num_deletions=args.num_deletions)
+            
+            # Dictionary methods
+            elif method in ["theme", "synonym", "insertion"]:
+                if not args.dictionary_path:
+                    raise ValueError(f"Method '{method}' requires --dictionary_path")
+                
+                if method == "theme":
+                    aug = ReplaceWithSameThemes(args.source_col, args.target_col, df_train, args.dictionary_path)
+                elif method == "synonym":
+                    aug = ReplaceWithSameSynonyms(args.source_col, args.target_col, df_train, args.dictionary_path)
+                elif method == "insertion":
+                    aug = RandomInsertion(args.source_col, args.target_col, df_train, args.dictionary_path)
+            
+            if aug:
+                res_df = aug.augment()
+                dfs_to_merge.append(res_df)
+
+        # Gộp tất cả kết quả lại
+        final_df = pd.concat(dfs_to_merge)
+        # Loại bỏ trùng lặp (nếu Original bị thêm nhiều lần)
+        final_df = final_df.drop_duplicates(subset=[args.source_col, args.target_col])
+        
+        logger.info(f"Merged Size: {len(final_df)} rows")
+
+        # NẾU CHỈ AUGMENT: Lưu file và Dừng
+        if args.mode == "augment":
+            if not args.save_data_path:
+                raise ValueError("Mode 'augment' requires --save_data_path to save result.")
+            
+            final_df.to_csv(args.save_data_path, index=False)
+            logger.info(f"Successfully saved augmented data to: {args.save_data_path}")
+            return None  # Trả về None để báo hiệu runner dừng lại
+
+    # 3. Load Test Data
     test_path = None
-    
-    # Ưu tiên lấy từ tham số --test_path
     if args.test_path:
         test_path = args.test_path
     else:
-        # Nếu không truyền, tự tìm file "test.csv" cùng thư mục với train
         data_dir = os.path.dirname(args.dataset_path)
-        possible_path = os.path.join(data_dir, "test.csv")
-        if os.path.exists(possible_path):
-            test_path = possible_path
+        possible = os.path.join(data_dir, "test.csv")
+        if os.path.exists(possible): test_path = possible
 
     if test_path and os.path.exists(test_path):
-        logger.info(f"Loading test data from: {test_path}")
+        logger.info(f"Loading test: {test_path}")
         df_test = pd.read_csv(test_path)
-        
         dataset_dict = DatasetDict({
-            "train": Dataset.from_pandas(aug_df),
+            "train": Dataset.from_pandas(final_df),
             "test": Dataset.from_pandas(df_test)
         })
     else:
-        logger.warning("No test file found. Using random split (10%).")
-        full_ds = Dataset.from_pandas(aug_df)
+        logger.warning("No test file. Using random split.")
+        full_ds = Dataset.from_pandas(final_df)
         dataset_dict = full_ds.train_test_split(test_size=0.1, seed=args.seed)
 
     # 4. Tokenize

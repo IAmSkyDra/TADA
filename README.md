@@ -5,6 +5,30 @@ This repository accompanies the paper: When Data Augmentation Hurts: Typology-Aw
 
 ---
 
+---
+
+## The Heritage Behind the Data: A Tale of Two Cultures
+![pannel](https://github.com/user-attachments/assets/503f852f-c957-4a46-a8eb-297bd110815d)
+
+Behind the technical framework of TADA lies the cultural essence of millions. This project focuses on two ethnic groups with profound historical legacies in Vietnam that remain significantly underrepresented in the digital text landscape: the Tay and the Bahnar.
+
+### The Tày: Echoes from the Northern Highlands
+Residing in the emerald valleys of Northern Vietnam, the Tày people preserve a heritage as ancient as the mountains themselves. Their language, belonging to the Tai-Kadai family, is the medium for "Then" singing—a UNESCO-recognized art form that serves as a spiritual bridge between communities.
+
+* **Linguistic Essence:** The Tày language is a quintessential **Analytic** language. Its meaning is primarily constructed through precise word order and subtle particles rather than word transformations.
+* **The Digital Gap:** Despite being the second-largest ethnic group in Vietnam, their textual presence in the digital world is a mere whisper. TADA aims to amplify this presence, transforming scarce written records into robust data for NMT by respecting its unique syntactic constraints.
+
+### The Bahnar: Epics of the Central Highlands
+In the heart of the Central Highlands, beneath the towering roofs of the Rong houses, live the Bahnar people. Their culture is a symphony of Gongs and oral epics (H'mon) that have been transcribed and passed down through generations.
+
+* **Linguistic Essence:** In stark contrast to the tonal languages of the plains, Bahnar is a **Morphologically Rich** language of the Austroasiatic family. It employs a complex system of prefixes and infixes to modify meanings—a structural puzzle that traditional NMT models often fail to decode.
+* **The Mission:** As the Bahnar community navigates the digital era, their unique written identity faces the risk of "digital extinction." TADA seeks to preserve this heritage by ensuring that NMT models can comprehend the intricate internal structures of Bahnar words.
+
+### Why Tay and Bahnar?
+By focusing on the **Tày (Analytic)** and the **Bahnar (Agglutinative/Morphologically Complex)**, TADA does not merely solve a technical challenge. We are building a bridge between two fundamentally different linguistic worlds. We believe that NMT for low-resource languages is not just a matter of data points—it is about honoring the dignity and ensuring the survival of a people's written mother tongue in the age of Artificial Intelligence.
+
+---
+
 ## Why TADA?
 Typology-Aware: Moves beyond "one-size-fits-all" augmentation by respecting linguistic constraints (Analytic vs. Agglutinative).
 
@@ -49,7 +73,7 @@ Genealogy-Driven Design. Distinguishes between analytic constraints (Tai-Kadai) 
 TADA is designed as a command-line tool tada-train. Below are the available options:
 
 ```
-usage: tada-train [-h] --dataset_path DATASET_PATH [--test_path TEST_PATH] [--augment_method METHOD] ...
+usage: tada-train [-h] --dataset_path DATASET_PATH [--test_path TEST_PATH] [--mode {augment,train,all}] ...
 
 Train and evaluate typology-aware augmentation for Low-Resource NMT.
 
@@ -57,6 +81,8 @@ options:
   -h, --help            Show this help message and exit.
 
 Data Arguments:
+  --mode STR:           Mode: 'augment' (gen data only), 'train' (train only), 'all' (augment + train) (default: all).
+  --save_data_path PATH Path to save augmented CSV (Required if mode='augment').
   --dataset_path PATH   Path to the input CSV file (Train set) (Required).
   --test_path PATH      Path to the input CSV file (Test set) (Optional).
   --source_col STR      Column name for source language (default: src).
@@ -96,30 +122,60 @@ pip install -e .
 ```
 
 ---
+## Supported Augmentation Methods
 
+Below is the list of available augmentation strategies you can pass to `--augment_method`.
+
+| Method Name | Description | Related Arguments |
+| :--- | :--- | :--- |
+| **`baseline`** | Standard fine-tuning on original data (No augmentation). | (None) |
+| **`combine`** | Concatenates N consecutive sentences into a single training sample. | `--batch_size_aug` (Default: 10) |
+| **`sliding`** | Creates a sliding window of $N$ sentences. | `--window_size` (Default: 2) |
+| **`deletion`** | Randomly deletes $K$ words from the source sentence. | `--num_deletions` (Default: 1) |
+| **`delete_orig`** | Keeps the **Original** sentence AND adds the **Deletion** version. | `--num_deletions` (Default: 1) |
+| **`swap`** | Swaps the order of sentences or phrases. | *(None)* |
+| **`synonym`** | Replaces words with their synonyms found in the dictionary. | `--dictionary_path` **(Required)** |
+| **`theme`** | Replaces words with others from the same semantic theme (e.g., *river* -> *stream*). | `--dictionary_path` **(Required)** |
+| **`insertion`** | Randomly inserts related words from the dictionary into the sentence. | `--dictionary_path` **(Required)** |
+
+---
 ## Quickstart
-
 This section demonstrates how to run experiments using the tada-train command.
-**1. Baseline (No Augmentation)**
-Standard fine-tuning on the original dataset without any changes.
+# 1. Generate Augmented Data Only (`--mode augment`)
+**Example A: Single Method (Deletion)**
 ```bash
-tada-train --dataset_path "data/Bahnar/Original/train.csv" \
-           --augment_method baseline \
-           --epochs 10
+tada-train --mode augment \
+           --dataset_path "data/Bahnar/Original/train.csv" \
+           --augment_method deletion \
+           --num_deletions 1 \
+           --save_data_path "data/Bahnar/train_aug_delete.csv"
 ```
-
-**2. Deletion + Original (Recommended)**
+**Example B: Multiple Methods (Deletion + Synonym)**
+```bash
+tada-train --mode augment \
+           --dataset_path "data/Bahnar/Original/train.csv" \
+           --augment_method deletion synonym \
+           --dictionary_path "data/Bahnar/Original/dictionary.csv" \
+           --num_deletions 1 \
+           --save_data_path "data/Bahnar/train_aug_multi.csv"
+```
+# 2. Train only ('--mode train)
 This method combines the original corpus with deletion-augmented samples, often yielding the best stability for analytic languages.
 ```bash
-tada-train --dataset_path "data/Bahnar/Original/train.csv" \
-           --augment_method delete_orig \
-           --num_deletions 1
+tada-train --mode train \
+           --dataset_path "data/Bahnar/Original/train.csv" \
+           --epochs 10 \
+           --output_dir "outputs/Bahnar_TrainOnly"
 ```
-**3. Theme Replacement (Requires Dictionary)**
+
+# Augment + Train Pipeline (--mode all)
 ```bash
-tada-train --dataset_path "data/Bahnar/Original/train.csv" \
-           --augment_method theme \
-           --dictionary_path "data/Bahnar/Original/dictionary.csv"
+tada-train --mode all \
+           --dataset_path "data/Bahnar/Original/train.csv" \
+           --augment_method delete_orig combine \
+           --batch_size_aug 5 \
+           --epochs 15 \
+           --output_dir "outputs/Bahnar_FullPipeline"
 ```
 
 ---

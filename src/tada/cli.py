@@ -8,21 +8,28 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
+    # --- NEW: Execution Mode ---
+    parser.add_argument("--mode", type=str, default="all", choices=["augment", "train", "all"],
+                        help="Mode: 'augment' (gen data only), 'train' (train only), 'all' (augment + train)")
+    
+    parser.add_argument("--save_data_path", type=str, default=None,
+                        help="Path to save augmented CSV (Required if mode='augment')")
+
     # Data
     data = parser.add_argument_group("Data Config")
-    data.add_argument("--dataset_path", type=str, required=True, help="Path to TRAIN csv")
-    data.add_argument("--test_path", type=str, default=None, help="Path to TEST csv (Optional)") # <--- MỚI THÊM
-    data.add_argument("--source_col", type=str, default="bahnaric")
-    data.add_argument("--target_col", type=str, default="vietnamese")
+    data.add_argument("--dataset_path", type=str, required=True, help="Path to INPUT csv (Train)")
+    data.add_argument("--test_path", type=str, default=None, help="Path to TEST csv (Optional)")
+    data.add_argument("--source_col", type=str, default="src")
+    data.add_argument("--target_col", type=str, default="tgt")
     data.add_argument("--max_source_len", type=int, default=128)
     data.add_argument("--max_target_len", type=int, default=128)
 
-    # Augmentation
+    # Augmentation (Updated to allow Multiple Methods)
     aug = parser.add_argument_group("TADA Augmentation")
-    aug.add_argument("--augment_method", type=str, default="baseline",
+    aug.add_argument("--augment_method", type=str, nargs='+', default=["baseline"],
                      choices=["baseline", "combine", "swap", "theme", "synonym", 
                               "insertion", "deletion", "sliding", "delete_orig"],
-                     help="Augmentation Strategy")
+                     help="List of Augmentation Strategies (e.g. 'delete synonym')")
     
     aug.add_argument("--dictionary_path", type=str, default=None, 
                      help="Path to dictionary CSV (Required for theme, synonym, insertion)")
