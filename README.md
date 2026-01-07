@@ -3,6 +3,8 @@ A principled, typology-aware framework for data augmentation in extremely low-re
 
 This repository accompanies the paper: When Data Augmentation Hurts: Typology-Aware and Meaning-Preserving Augmentation for Low-Resource Neural Machine Translation Anonymous ACL Submission.
 
+---
+
 ## Why TADA?
 Typology-Aware: Moves beyond "one-size-fits-all" augmentation by respecting linguistic constraints (Analytic vs. Agglutinative).
 
@@ -10,11 +12,12 @@ Meaning-Preserving: Prioritizes semantic fidelity over blind structural variatio
 
 Full Pipeline: Integrates language-proximal initialization, monolingual continual pretraining, and supervised fine-tuning.
 
+---
+
 ## Core Features
 TADA provides a comprehensive suite of features designed to support rigorous evaluation of augmentation strategies on typologically diverse languages.
 
-**1. Augmentation Operators** 
-**Augmentation Operators**
+**Augmentation Operators** 
 
 Meaning-Preserving: Synonym Replacement, Theme-Based Replacement, Contextual Place/Time Insertion.
 
@@ -39,6 +42,8 @@ Supports BLEU and METEOR evaluation metrics.
 Releases benchmarks for Tày-Vietnamese and Bahnar-Vietnamese translation.
 
 Genealogy-Driven Design. Distinguishes between analytic constraints (Tai-Kadai) and agglutinative/morphological constraints (Austroasiatic) to predict augmentation stability.
+
+---
 
 ## Command-Line Interface (CLI)
 TADA is designed as a command-line tool tada-train. Below are the available options:
@@ -98,7 +103,7 @@ This section demonstrates how to run experiments using the tada-train command.
 **1. Baseline (No Augmentation)**
 Standard fine-tuning on the original dataset without any changes.
 ```bash
-tada-train --dataset_path "data/Bahnaric/Original/train.csv" \
+tada-train --dataset_path "data/Bahnar/Original/train.csv" \
            --augment_method baseline \
            --epochs 10
 ```
@@ -106,16 +111,19 @@ tada-train --dataset_path "data/Bahnaric/Original/train.csv" \
 **2. Deletion + Original (Recommended)**
 This method combines the original corpus with deletion-augmented samples, often yielding the best stability for analytic languages.
 ```bash
-tada-train --dataset_path "data/Bahnaric/Original/train.csv" \
+tada-train --dataset_path "data/Bahnar/Original/train.csv" \
            --augment_method delete_orig \
            --num_deletions 1
 ```
 **3. Theme Replacement (Requires Dictionary)**
 ```bash
-tada-train --dataset_path "data/Bahnaric/Original/train.csv" \
+tada-train --dataset_path "data/Bahnar/Original/train.csv" \
            --augment_method theme \
-           --dictionary_path "data/Bahnaric/Original/dictionary.csv"
+           --dictionary_path "data/Bahnar/Original/dictionary.csv"
 ```
+
+---
+
 ## Datasets
 Our benchmark encompasses two typologically distinct low-resource languages paired with Vietnamese. These datasets were constructed through fieldwork and community collaboration.
 
@@ -141,6 +149,8 @@ Characteristics: Highly sensitive to structural perturbation; requires morpholog
 
 Detailed statistics and collection procedures are available in Appendix B of the paper.
 
+---
+
 ## Data Format
 TADA expects input data in **CSV format**.
 
@@ -151,18 +161,33 @@ Ensure your data directory is organized as follows:
 
 TADA/
 ├── data/
-│   ├── Bahnaric/
-│   │   └── Original/
-│   │       ├── train.csv       
-│   │       ├── test.csv        
-│   │       └── dictionary.csv  
-│   └── Tay/
-│       └── Original/
-│           ├── train.csv
-│           ├── test.csv
-│           └── dictionary.csv     
+│    ├── Bahnar/                    
+│    │   ├── Original/              
+│    │   │   ├── train.csv        
+│    │   │   ├── test.csv           
+│    │   │   └── dictionary.csv     
+│    │   ├── Augmented (1-side)/   
+│    │   │   ├── combine_bahnar.csv        
+│    │   │   └── combine_vietnamese.csv
+│    │   └── Augmented (2-side)/ 
+│    │   │   ├── combine.csv        
+│    │   │   └── delete_original.csv   
+│    └── Tay/                       
+│        ├── Original/
+│        │   ├── train.csv
+│        │   ├── test.csv
+│        │   └── dictionary.csv
+│        ├── Augmented (1-side)/
+│        │   ├── combine_tay.csv        
+│        │   └── combine_vietnamese.csv
+│        └── Augmented (2-side)/    
+│            ├── combine.csv        
+│            └── delete_original.csv
 
 ``` 
+
+---
+
 # File Content (Line-aligned):
 **1. train.csv**
 ```bash
@@ -174,6 +199,8 @@ Bahnaric,Vietnamese
 Bahnaric,Vietnamese,pos,theme
 "pơlĕi pơla","bản làng",d.,place
 ```
+
+---
 
 ## Outputs
 Upon execution, TADA creates an outputs/ directory organized by experiment run.
@@ -187,6 +214,9 @@ outputs/
 └── delete_orig_ep15_sd42/
     └── ...
 ```
+
+---
+
 ## Benchmarks & Results
 To facilitate analysis of results across typologically different languages, TADA allows for comparative reporting.
 
@@ -224,6 +254,9 @@ TADA ensures strict reproducibility for low-resource research:
 **Model:** Built on vinai/bartpho to ensure a consistent pre-trained baseline.
 
 **Splits:** Deterministic train/test splitting logic.
+
+---
+
 ## Citation
 If you use TADA or the datasets in your research, please cite our work:
 
